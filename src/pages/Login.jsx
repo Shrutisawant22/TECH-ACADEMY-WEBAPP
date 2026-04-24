@@ -1,5 +1,9 @@
+// ==========================
+// 📁 Login.jsx (ULTRA PREMIUM UI + WORKING AUTH)
+// ==========================
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -21,7 +25,10 @@ export default function Login() {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({
+          email: email.trim(),
+          password: password.trim()
+        })
       });
 
       const data = await res.json();
@@ -29,7 +36,7 @@ export default function Login() {
       if (!res.ok) {
         setError(data.message || "Login failed");
       } else {
-        localStorage.setItem("token", data.data.token);
+        localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.data.user));
         navigate("/courses");
       }
@@ -41,140 +48,206 @@ export default function Login() {
   };
 
   return (
-    <>
-      <style>{`
-        body {
-          margin: 0;
-          font-family: 'Poppins', sans-serif;
-        }
+    <div className="login-wrapper">
+      {/* BACKGROUND ANIMATION */}
+      <div className="bg"></div>
 
-        .container {
+      <motion.div
+        className="card"
+        initial={{ opacity: 0, y: 50, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <h1>🚀 Tech Academy</h1>
+        <p className="subtitle">Upgrade your skills. Build your future.</p>
+
+        {error && <div className="error">{error}</div>}
+
+        <form onSubmit={handleLogin}>
+          <div className="input-box">
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <label>Email Address</label>
+          </div>
+
+          <div className="input-box">
+            <input
+              type={showPass ? "text" : "password"}
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <label>Password</label>
+            <span onClick={() => setShowPass(!showPass)}>
+              {showPass ? "🙈" : "👁️"}
+            </span>
+          </div>
+
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            className="btn"
+            disabled={loading}
+          >
+            {loading ? "Logging in..." : "Login"}
+          </motion.button>
+        </form>
+
+        <button
+          className="admin-btn"
+          onClick={() => navigate("/admin/login")}
+        >
+          🔐 Admin Login
+        </button>
+
+        <p className="bottom">
+          Don’t have an account?{" "}
+          <span onClick={() => navigate("/register")}>
+            Register
+          </span>
+        </p>
+      </motion.div>
+
+      {/* STYLES */}
+      <style>{`
+        .login-wrapper {
           height: 100vh;
           display: flex;
           justify-content: center;
           align-items: center;
-          background: linear-gradient(135deg, #0f172a, #1e293b);
+          background: #020617;
+          position: relative;
           overflow: hidden;
+          font-family: 'Inter', sans-serif;
         }
 
-        .background-glow {
+        .bg {
           position: absolute;
-          width: 600px;
-          height: 600px;
-          background: radial-gradient(circle, rgba(99,102,241,0.4), transparent);
-          filter: blur(100px);
-          animation: float 6s ease-in-out infinite;
+          width: 100%;
+          height: 100%;
+          background: radial-gradient(circle at 20% 20%, #6366f1, transparent),
+                      radial-gradient(circle at 80% 80%, #8b5cf6, transparent),
+                      radial-gradient(circle at 50% 50%, #22c55e, transparent);
+          filter: blur(120px);
+          animation: move 10s infinite alternate;
         }
 
-        @keyframes float {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-40px); }
+        @keyframes move {
+          from { transform: translate(0,0); }
+          to { transform: translate(-60px,-40px); }
         }
 
         .card {
           position: relative;
+          z-index: 2;
           width: 380px;
           padding: 40px;
           border-radius: 20px;
-          background: rgba(255,255,255,0.08);
-          backdrop-filter: blur(20px);
-          box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-          animation: fadeIn 0.8s ease;
-        }
-
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(40px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        .title {
-          font-size: 28px;
-          font-weight: bold;
+          background: rgba(255,255,255,0.05);
+          backdrop-filter: blur(25px);
+          border: 1px solid rgba(255,255,255,0.1);
+          box-shadow: 0 20px 60px rgba(0,0,0,0.7);
           color: white;
+        }
+
+        h1 {
           text-align: center;
+          margin-bottom: 5px;
         }
 
         .subtitle {
           text-align: center;
-          color: #cbd5f5;
-          margin-bottom: 25px;
+          color: #94a3b8;
+          margin-bottom: 20px;
         }
 
-        .input-group {
+        .input-box {
           position: relative;
-          margin-bottom: 22px;
+          margin-bottom: 20px;
         }
 
-        .input-group input {
+        .input-box input {
           width: 100%;
           padding: 14px;
           border-radius: 10px;
           border: none;
           outline: none;
-          background: rgba(255,255,255,0.1);
+          background: rgba(255,255,255,0.08);
           color: white;
-          transition: 0.3s;
         }
 
-        .input-group input:focus {
-          box-shadow: 0 0 10px rgba(99,102,241,0.8);
-        }
-
-        .input-group label {
+        .input-box label {
           position: absolute;
-          left: 14px;
+          left: 12px;
           top: 14px;
-          color: #cbd5f5;
+          color: #94a3b8;
           transition: 0.3s;
         }
 
-        .input-group input:focus + label,
-        .input-group input:not(:placeholder-shown) + label {
+        .input-box input:focus + label,
+        .input-box input:not(:placeholder-shown) + label {
           top: -8px;
           font-size: 12px;
           color: #6366f1;
         }
 
-        .eye {
+        .input-box span {
           position: absolute;
-          right: 12px;
+          right: 10px;
           top: 12px;
           cursor: pointer;
-          color: #cbd5f5;
         }
 
         .btn {
           width: 100%;
           padding: 14px;
-          border: none;
           border-radius: 12px;
-          background: linear-gradient(135deg, #6366f1, #8b5cf6);
+          border: none;
+          background: linear-gradient(135deg,#6366f1,#8b5cf6);
           color: white;
           font-weight: bold;
           cursor: pointer;
+          margin-top: 10px;
           transition: 0.3s;
         }
 
         .btn:hover {
-          transform: translateY(-2px) scale(1.03);
-          box-shadow: 0 10px 25px rgba(99,102,241,0.5);
+          transform: translateY(-2px);
+          box-shadow: 0 10px 30px rgba(99,102,241,0.4);
         }
 
-        .btn:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
+        .admin-btn {
+          width: 100%;
+          margin-top: 12px;
+          padding: 10px;
+          border-radius: 10px;
+          border: 1px solid #6366f1;
+          background: transparent;
+          color: #a5b4fc;
+          cursor: pointer;
+        }
+
+        .admin-btn:hover {
+          background: #6366f1;
+          color: white;
         }
 
         .error {
+          background: rgba(239,68,68,0.1);
           color: #f87171;
-          text-align: center;
+          padding: 10px;
+          border-radius: 8px;
           margin-bottom: 10px;
+          text-align: center;
         }
 
         .bottom {
-          margin-top: 20px;
           text-align: center;
-          color: #cbd5f5;
+          margin-top: 15px;
+          color: #94a3b8;
         }
 
         .bottom span {
@@ -182,60 +255,7 @@ export default function Login() {
           cursor: pointer;
           font-weight: 600;
         }
-
-        .bottom span:hover {
-          text-decoration: underline;
-        }
       `}</style>
-
-      <div className="container">
-        <div className="background-glow"></div>
-
-        <div className="card">
-          <h1 className="title">Tech Academy 🚀</h1>
-          <p className="subtitle">Unlock your learning journey</p>
-
-          {error && <div className="error">{error}</div>}
-
-          <form onSubmit={handleLogin}>
-            <div className="input-group">
-              <input
-                type="email"
-                required
-                placeholder=" "
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-              <label>Email Address</label>
-            </div>
-
-            <div className="input-group">
-              <input
-                type={showPass ? "text" : "password"}
-                required
-                placeholder=" "
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-              <label>Password</label>
-              <span className="eye" onClick={() => setShowPass(!showPass)}>
-                {showPass ? "🙈" : "👁️"}
-              </span>
-            </div>
-
-            <button className="btn" disabled={loading}>
-              {loading ? "Logging in..." : "Login"}
-            </button>
-          </form>
-
-          <p className="bottom">
-            New here?{" "}
-            <span onClick={() => navigate("/register")}>
-              Create Account
-            </span>
-          </p>
-        </div>
-      </div>
-    </>
+    </div>
   );
 }

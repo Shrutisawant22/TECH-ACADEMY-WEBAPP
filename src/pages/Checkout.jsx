@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 
 export default function Checkout() {
   const { courseId } = useParams();
@@ -9,45 +10,73 @@ export default function Checkout() {
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
+
+  const [method, setMethod] = useState("card"); // card | upi
 
   const [card, setCard] = useState({
     number: "",
     expiry: "",
-    cvv: ""
+    cvv: "",
+    name: ""
   });
 
-  // ==========================
-  // FETCH COURSE
-  // ==========================
+  const [upiId, setUpiId] = useState("");
+
+  // ================= FETCH =================
   useEffect(() => {
     const fetchCourse = async () => {
-      const res = await fetch("http://localhost:5000/api/courses", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`
-        }
-      });
-
-      const data = await res.json();
-      const found = data.data.find((c) => c._id === courseId);
-      setCourse(found);
-      setLoading(false);
+      try {
+        const res = await fetch("http://localhost:5000/api/courses", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`
+          }
+        });
+        const data = await res.json();
+        setCourse(data.data.find((c) => c._id === courseId));
+      } catch {
+        setError("Failed to load course");
+      } finally {
+        setLoading(false);
+      }
     };
-
     fetchCourse();
   }, [courseId]);
 
-  // ==========================
-  // PAYMENT
-  // ==========================
-  const handlePayment = async () => {
-    if (!card.number || !card.expiry || !card.cvv) {
-      alert("Fill all card details ❗");
-      return;
+  // ================= FORMAT =================
+  const formatCardNumber = (v) =>
+    v.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim();
+
+  const formatExpiry = (v) =>
+    v.replace(/\D/g, "").slice(0, 4).replace(/(\d{2})(\d{1,2})/, "$1/$2");
+
+  // ================= VALIDATION =================
+  const validate = () => {
+    if (method === "card") {
+      if (card.number.replace(/\s/g, "").length !== 16) return "Invalid card";
+      if (card.cvv.length !== 3) return "Invalid CVV";
+      if (!card.expiry.includes("/")) return "Invalid expiry";
+      if (!card.name) return "Enter name";
     }
 
-    setProcessing(true);
+    if (method === "upi") {
+      if (!upiId.includes("@")) return "Invalid UPI ID";
+    }
 
-    setTimeout(async () => {
+    return "";
+  };
+
+  // ================= PAYMENT =================
+  const handlePayment = async () => {
+    const err = validate();
+    if (err) return setError(err);
+
+    setProcessing(true);
+    setError("");
+
+    try {
+      await new Promise((r) => setTimeout(r, 1500));
+
       await fetch("http://localhost:5000/api/enrollments", {
         method: "POST",
         headers: {
@@ -57,26 +86,154 @@ export default function Checkout() {
         body: JSON.stringify({ courseId })
       });
 
-      setProcessing(false);
       setSuccess(true);
 
-      setTimeout(() => {
-        navigate("/my-courses");
-      }, 2000);
-    }, 1500);
+      setTimeout(() => navigate("/my-courses"), 2000);
+    } catch {
+      setError("Payment failed");
+    } finally {
+      setProcessing(false);
+    }
   };
 
-  if (loading) {
-    return <div style={{ color: "white" }}>Loading...</div>;
-  }
+  if (loading) return <div className="center">Loading...</div>;
 
   return (
-    <>
+    <div className="page">
+
+      {/* LEFT */}
+      <div className="left">
+        <img src={course.thumbnail} className="img" alt="" />
+        <h2>{course.title}</h2>
+        <p>{course.description}</p>
+
+        <div className="meta">
+          ⭐ {course.rating} • {course.studentsEnrolled}+ students
+        </div>
+      </div>
+
+      {/* RIGHT */}
+      <div className="right">
+
+        {success ? (
+          <motion.div
+            className="success"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+          >
+            🎉 Payment Successful
+          </motion.div>
+        ) : (
+          <>
+            <h3>Secure Checkout 🔒</h3>
+
+            {/* PAYMENT METHOD */}
+            <div className="tabs">
+              <button
+                className={method === "card" ? "active" : ""}
+                onClick={() => setMethod("card")}
+              >
+                💳 Card
+              </button>
+
+              <button
+                className={method === "upi" ? "active" : ""}
+                onClick={() => setMethod("upi")}
+              >
+                📱 UPI
+              </button>
+            </div>
+
+            {/* CARD */}
+            {method === "card" && (
+              <>
+                <div className="card-preview">
+                  <p>{card.number || "**** **** **** ****"}</p>
+                  <div className="row">
+                    <span>{card.name || "YOUR NAME"}</span>
+                    <span>{card.expiry || "MM/YY"}</span>
+                  </div>
+                </div>
+
+                <input
+                  placeholder="Name"
+                  value={card.name}
+                  onChange={(e) =>
+                    setCard({ ...card, name: e.target.value })
+                  }
+                />
+
+                <input
+                  placeholder="Card Number"
+                  value={card.number}
+                  onChange={(e) =>
+                    setCard({
+                      ...card,
+                      number: formatCardNumber(e.target.value)
+                    })
+                  }
+                />
+
+                <div className="row">
+                  <input
+                    placeholder="MM/YY"
+                    value={card.expiry}
+                    onChange={(e) =>
+                      setCard({
+                        ...card,
+                        expiry: formatExpiry(e.target.value)
+                      })
+                    }
+                  />
+
+                  <input
+                    placeholder="CVV"
+                    value={card.cvv}
+                    onChange={(e) =>
+                      setCard({
+                        ...card,
+                        cvv: e.target.value.slice(0, 3)
+                      })
+                    }
+                  />
+                </div>
+              </>
+            )}
+
+            {/* UPI */}
+            {method === "upi" && (
+              <div className="upi-box">
+                <p>Scan QR or enter UPI ID</p>
+
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=test@upi&pn=TechAcademy&am=${course.price || 499}`}
+                  alt="QR"
+                />
+
+                <input
+                  placeholder="yourname@upi"
+                  value={upiId}
+                  onChange={(e) => setUpiId(e.target.value)}
+                />
+              </div>
+            )}
+
+            {error && <p className="error">{error}</p>}
+
+            <button onClick={handlePayment}>
+              {processing ? "Processing..." : `Pay ₹${course.price || 499}`}
+            </button>
+
+            <p className="secure">🔒 Secure Payment</p>
+          </>
+        )}
+      </div>
+
       <style>{`
-        .container {
+        .page {
           display: flex;
           min-height: 100vh;
-          background: linear-gradient(135deg, #020617, #0f172a);
+          background: #020617;
           color: white;
         }
 
@@ -86,133 +243,90 @@ export default function Checkout() {
         }
 
         .right {
-          width: 400px;
+          width: 420px;
           padding: 30px;
-          background: rgba(255,255,255,0.08);
-          backdrop-filter: blur(20px);
-          border-left: 1px solid rgba(255,255,255,0.1);
+          background: #0f172a;
         }
 
-        .course-img {
+        .img {
           width: 100%;
-          border-radius: 15px;
-          margin-bottom: 20px;
+          border-radius: 12px;
         }
 
-        .price {
-          font-size: 30px;
-          color: #22c55e;
-          margin: 10px 0;
+        .tabs {
+          display: flex;
+          gap: 10px;
+          margin: 15px 0;
         }
 
-        .input {
+        .tabs button {
+          flex: 1;
+          padding: 10px;
+          border-radius: 8px;
+          border: none;
+          background: #1e293b;
+          color: white;
+        }
+
+        .tabs .active {
+          background: #6366f1;
+        }
+
+        input {
           width: 100%;
           padding: 12px;
-          margin-top: 12px;
+          margin-top: 10px;
+          border-radius: 8px;
+          border: none;
+          background: #1e293b;
+          color: white;
+        }
+
+        .row {
+          display: flex;
+          gap: 10px;
+        }
+
+        .card-preview {
+          background: linear-gradient(135deg,#6366f1,#8b5cf6);
+          padding: 15px;
+          border-radius: 12px;
+        }
+
+        .upi-box {
+          text-align: center;
+        }
+
+        .upi-box img {
+          margin: 10px auto;
+        }
+
+        button {
+          width: 100%;
+          margin-top: 15px;
+          padding: 12px;
           border-radius: 10px;
           border: none;
-          background: rgba(255,255,255,0.1);
+          background: #6366f1;
           color: white;
         }
 
-        .btn {
-          margin-top: 20px;
-          width: 100%;
-          padding: 14px;
-          border-radius: 12px;
-          border: none;
-          background: linear-gradient(135deg, #6366f1, #8b5cf6);
-          color: white;
-          font-weight: bold;
-          cursor: pointer;
-          transition: 0.3s;
-        }
-
-        .btn:hover {
-          transform: scale(1.05);
+        .error {
+          color: red;
         }
 
         .success {
           text-align: center;
-          margin-top: 50px;
-          font-size: 24px;
           color: #22c55e;
-          animation: pop 0.5s ease;
         }
 
-        @keyframes pop {
-          from { transform: scale(0.8); opacity: 0; }
-          to { transform: scale(1); opacity: 1; }
-        }
-
-        .summary {
-          font-size: 14px;
-          color: #94a3b8;
+        .center {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 100vh;
         }
       `}</style>
-
-      <div className="container">
-
-        {/* LEFT SIDE */}
-        <div className="left">
-          <h2>{course.title}</h2>
-          <img src={course.thumbnail} className="course-img" alt="" />
-          <p>{course.description}</p>
-
-          <div className="summary">
-            ⭐ {course.rating} • 👨‍🎓 {course.studentsEnrolled}+ students
-          </div>
-        </div>
-
-        {/* RIGHT SIDE */}
-        <div className="right">
-          {success ? (
-            <div className="success">
-              🎉 Payment Successful <br />
-              Redirecting...
-            </div>
-          ) : (
-            <>
-              <h3>Checkout</h3>
-
-              <div className="price">
-                ₹{course.price || 499}
-              </div>
-
-              <input
-                className="input"
-                placeholder="Card Number"
-                value={card.number}
-                onChange={(e) =>
-                  setCard({ ...card, number: e.target.value })
-                }
-              />
-
-              <input
-                className="input"
-                placeholder="MM/YY"
-                value={card.expiry}
-                onChange={(e) =>
-                  setCard({ ...card, expiry: e.target.value })
-                }
-              />
-
-              <input
-                className="input"
-                placeholder="CVV"
-                value={card.cvv}
-                onChange={(e) =>
-                  setCard({ ...card, cvv: e.target.value })
-                }
-              />
-
-              <button className="btn" onClick={handlePayment}>
-                {processing ? "Processing..." : "Pay Now 🚀"}
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-    </>
+    </div>
   );
 }

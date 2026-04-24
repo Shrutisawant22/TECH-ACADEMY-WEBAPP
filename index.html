@@ -1,14 +1,128 @@
+<!-- ==========================
+📁 index.html (ULTRA ADVANCED)
+========================== -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
+    <!-- ==========================
+    ⚙️ META
+    ========================== -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tech Academy</title>
+
+    <title>Tech Academy 🚀</title>
+    <meta name="description" content="Tech Academy - Learn, Build, Grow 🚀" />
+    <meta name="theme-color" content="#020617" />
+
+    <!-- ==========================
+    🎨 FAVICON
+    ========================== -->
+    <link rel="icon" href="/favicon.ico" />
+
+    <!-- ==========================
+    ⚡ PERFORMANCE
+    ========================== -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- ==========================
+    🔤 FONTS
+    ========================== -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- ==========================
+    🎯 SEO + SOCIAL
+    ========================== -->
+    <meta property="og:title" content="Tech Academy" />
+    <meta property="og:description" content="Premium EdTech Platform 🚀" />
+    <meta property="og:type" content="website" />
+
+    <!-- ==========================
+    🚀 PRELOADER STYLE
+    ========================== -->
+    <style>
+      body {
+        margin: 0;
+        font-family: "Inter", sans-serif;
+        background: radial-gradient(circle at top, #020617, #0f172a);
+        color: white;
+      }
+
+      #preloader {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        gap: 12px;
+        background: #020617;
+        z-index: 9999;
+      }
+
+      .spinner {
+        width: 45px;
+        height: 45px;
+        border: 4px solid #1e293b;
+        border-top: 4px solid #6366f1;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      .logo {
+        font-size: 22px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+      }
+
+      .tagline {
+        font-size: 13px;
+        color: #94a3b8;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
   </head>
 
   <body>
+    <!-- ==========================
+    🚀 PRELOADER
+    ========================== -->
+    <div id="preloader">
+      <div class="logo">⚡ Tech Academy</div>
+      <div class="spinner"></div>
+      <div class="tagline">Loading platform...</div>
+    </div>
+
+    <!-- ==========================
+    ⚛️ ROOT
+    ========================== -->
     <div id="root"></div>
 
+    <!-- ==========================
+    🧠 REMOVE PRELOADER AFTER LOAD
+    ========================== -->
+    <script>
+      window.addEventListener("load", () => {
+        const loader = document.getElementById("preloader");
+        if (loader) {
+          loader.style.opacity = "0";
+          loader.style.transition = "0.4s";
+          setTimeout(() => loader.remove(), 400);
+        }
+      });
+    </script>
+
+    <!-- ==========================
+    🚀 MAIN SCRIPT
+    ========================== -->
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

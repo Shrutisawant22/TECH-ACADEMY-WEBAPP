@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
 
 export default function MyCourses() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // ==========================
-  // 📡 FETCH ENROLLED COURSES
+  // FETCH COURSES
   // ==========================
   useEffect(() => {
     const fetchMyCourses = async () => {
@@ -30,23 +31,39 @@ export default function MyCourses() {
         setCourses(enriched);
       } catch (err) {
         console.error(err);
+      } finally {
+        setLoading(false);
       }
-
-      setLoading(false);
     };
 
     fetchMyCourses();
   }, []);
 
   // ==========================
-  // 🔄 UPDATE PROGRESS (LIVE)
+  // DASHBOARD STATS
   // ==========================
-  const updateProgress = async (enrollmentId, current) => {
+  const stats = useMemo(() => {
+    const total = courses.length;
+    const completed = courses.filter((c) => c.progress === 100).length;
+    const avg =
+      total === 0
+        ? 0
+        : Math.floor(
+            courses.reduce((sum, c) => sum + c.progress, 0) / total
+          );
+
+    return { total, completed, avg };
+  }, [courses]);
+
+  // ==========================
+  // UPDATE PROGRESS
+  // ==========================
+  const updateProgress = async (id, current) => {
     const newProgress = Math.min(current + 10, 100);
 
     try {
       await fetch(
-        `http://localhost:5000/api/enrollments/${enrollmentId}/progress`,
+        `http://localhost:5000/api/enrollments/${id}/progress`,
         {
           method: "PATCH",
           headers: {
@@ -59,23 +76,21 @@ export default function MyCourses() {
 
       setCourses((prev) =>
         prev.map((c) =>
-          c.enrollmentId === enrollmentId
-            ? { ...c, progress: newProgress }
-            : c
+          c.enrollmentId === id ? { ...c, progress: newProgress } : c
         )
       );
     } catch {
-      alert("Failed to update progress ❌");
+      alert("Failed ❌");
     }
   };
 
   // ==========================
-  // ❌ REMOVE COURSE
+  // REMOVE COURSE
   // ==========================
-  const removeCourse = async (enrollmentId) => {
+  const removeCourse = async (id) => {
     try {
       await fetch(
-        `http://localhost:5000/api/enrollments/${enrollmentId}`,
+        `http://localhost:5000/api/enrollments/${id}`,
         {
           method: "DELETE",
           headers: {
@@ -84,47 +99,167 @@ export default function MyCourses() {
         }
       );
 
-      setCourses((prev) =>
-        prev.filter((c) => c.enrollmentId !== enrollmentId)
-      );
+      setCourses((prev) => prev.filter((c) => c.enrollmentId !== id));
     } catch {
-      alert("Failed to remove ❌");
+      alert("Failed ❌");
     }
   };
 
+  // ==========================
+  // SKELETON
+  // ==========================
+  const Skeleton = () => (
+    <div className="card skeleton">
+      <div className="thumb shimmer"></div>
+      <div className="content">
+        <div className="line shimmer"></div>
+        <div className="line small shimmer"></div>
+      </div>
+    </div>
+  );
+
   return (
-    <>
+    <div className="page">
+
+      {/* HEADER */}
+      <div className="header">
+        <h1>🎓 My Learning Dashboard</h1>
+        <p>Track your progress and keep learning 🚀</p>
+      </div>
+
+      {/* STATS */}
+      <div className="stats">
+        <div className="stat-card">
+          <h3>{stats.total}</h3>
+          <p>Courses</p>
+        </div>
+
+        <div className="stat-card">
+          <h3>{stats.completed}</h3>
+          <p>Completed</p>
+        </div>
+
+        <div className="stat-card">
+          <h3>{stats.avg}%</h3>
+          <p>Avg Progress</p>
+        </div>
+      </div>
+
+      {/* GRID */}
+      <div className="grid">
+        {loading
+          ? Array(6).fill().map((_, i) => <Skeleton key={i} />)
+          : courses.map((course) => (
+              <motion.div
+                key={course._id}
+                className="card"
+                whileHover={{ scale: 1.05 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <div className="thumb">
+                  <img src={course.thumbnail} alt="" />
+                  <span className="badge">
+                    {course.progress === 100
+                      ? "Completed"
+                      : "In Progress"}
+                  </span>
+                </div>
+
+                <div className="content">
+                  <h3>{course.title}</h3>
+                  <p>{course.description.substring(0, 80)}...</p>
+
+                  {/* PROGRESS */}
+                  <div className="progress-bar">
+                    <div
+                      className="progress"
+                      style={{ width: `${course.progress}%` }}
+                    />
+                  </div>
+
+                  <div className="progress-text">
+                    {course.progress}% completed
+                  </div>
+
+                  {/* ACTIONS */}
+                  <div className="actions">
+                    <button
+                      className="btn primary"
+                      onClick={() =>
+                        updateProgress(
+                          course.enrollmentId,
+                          course.progress
+                        )
+                      }
+                    >
+                      Continue →
+                    </button>
+
+                    <button
+                      className="btn danger"
+                      onClick={() =>
+                        removeCourse(course.enrollmentId)
+                      }
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+      </div>
+
+      {/* EMPTY */}
+      {!loading && courses.length === 0 && (
+        <div className="empty">No courses yet 🚀</div>
+      )}
+
+      {/* STYLES */}
       <style>{`
-        .container {
-          padding: 40px;
+        .page {
+          padding: 30px;
           min-height: 100vh;
-          background: linear-gradient(135deg, #020617, #0f172a);
+          background: radial-gradient(circle at top, #0f172a, #020617);
+          color: white;
         }
 
-        .title {
+        .header h1 {
+          font-size: 38px;
+        }
+
+        .header p {
+          color: #94a3b8;
+        }
+
+        .stats {
+          display: flex;
+          gap: 20px;
+          margin: 20px 0;
+        }
+
+        .stat-card {
+          flex: 1;
+          padding: 20px;
+          border-radius: 15px;
+          background: rgba(255,255,255,0.05);
           text-align: center;
-          font-size: 34px;
-          color: white;
-          margin-bottom: 30px;
         }
 
         .grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
           gap: 25px;
         }
 
         .card {
-          border-radius: 20px;
+          border-radius: 18px;
           overflow: hidden;
-          background: rgba(255,255,255,0.06);
-          backdrop-filter: blur(25px);
-          box-shadow: 0 20px 60px rgba(0,0,0,0.7);
-          transition: 0.4s;
+          background: rgba(255,255,255,0.05);
         }
 
-        .card:hover {
-          transform: translateY(-10px) scale(1.03);
+        .thumb {
+          position: relative;
         }
 
         .thumb img {
@@ -133,36 +268,36 @@ export default function MyCourses() {
           object-fit: cover;
         }
 
+        .badge {
+          position: absolute;
+          top: 10px;
+          left: 10px;
+          background: #22c55e;
+          padding: 5px 10px;
+          border-radius: 8px;
+          font-size: 12px;
+        }
+
         .content {
           padding: 15px;
         }
 
-        .content h3 {
-          color: white;
-        }
-
-        .content p {
-          color: #94a3b8;
-          font-size: 14px;
-        }
-
         .progress-bar {
-          margin-top: 12px;
-          height: 10px;
-          background: rgba(255,255,255,0.1);
+          height: 8px;
+          background: #1e293b;
           border-radius: 10px;
+          margin-top: 10px;
         }
 
         .progress {
           height: 100%;
-          background: linear-gradient(90deg, #22c55e, #4ade80);
-          transition: width 0.4s ease;
+          background: linear-gradient(90deg,#22c55e,#4ade80);
         }
 
         .progress-text {
           font-size: 12px;
-          color: #94a3b8;
           margin-top: 5px;
+          color: #94a3b8;
         }
 
         .actions {
@@ -177,88 +312,50 @@ export default function MyCourses() {
           border-radius: 10px;
           border: none;
           cursor: pointer;
-          font-weight: bold;
         }
 
-        .continue {
-          background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        .primary {
+          background: #6366f1;
           color: white;
         }
 
-        .remove {
-          background: linear-gradient(135deg, #ef4444, #f87171);
+        .danger {
+          background: #ef4444;
           color: white;
         }
 
-        .btn:hover {
-          transform: scale(1.05);
-        }
-
-        .empty, .loader {
+        .empty {
           text-align: center;
-          margin-top: 80px;
-          color: white;
+          margin-top: 60px;
+        }
+
+        /* skeleton */
+        .skeleton .thumb {
+          height: 160px;
+          background: #1e293b;
+        }
+
+        .line {
+          height: 15px;
+          margin: 10px 0;
+          border-radius: 6px;
+        }
+
+        .small {
+          width: 60%;
+        }
+
+        .shimmer {
+          background: linear-gradient(90deg,#1e293b 25%,#334155 50%,#1e293b 75%);
+          background-size: 200% 100%;
+          animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
         }
       `}</style>
-
-      <div className="container">
-        <h2 className="title">🎓 My Learning Dashboard</h2>
-
-        {loading ? (
-          <div className="loader">Loading...</div>
-        ) : courses.length === 0 ? (
-          <div className="empty">No courses enrolled 🚀</div>
-        ) : (
-          <div className="grid">
-            {courses.map((course) => (
-              <div className="card" key={course._id}>
-                <div className="thumb">
-                  <img src={course.thumbnail} alt="" />
-                </div>
-
-                <div className="content">
-                  <h3>{course.title}</h3>
-                  <p>{course.description.substring(0, 80)}...</p>
-
-                  <div className="progress-bar">
-                    <div
-                      className="progress"
-                      style={{ width: `${course.progress}%` }}
-                    />
-                  </div>
-
-                  <div className="progress-text">
-                    Progress: {course.progress}%
-                  </div>
-
-                  <div className="actions">
-                    <button
-                      className="btn continue"
-                      onClick={() =>
-                        updateProgress(
-                          course.enrollmentId,
-                          course.progress
-                        )
-                      }
-                    >
-                      Continue ▶
-                    </button>
-
-                    <button
-                      className="btn remove"
-                      onClick={() =>
-                        removeCourse(course.enrollmentId)
-                      }
-                    >
-                      Remove ❌
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </>
+    </div>
   );
 }

@@ -1,3 +1,8 @@
+// ==========================
+// 📁 UPDATED Register.jsx (PREMIUM + ADMIN ACCESS LINK)
+// ==========================
+// Based on your file :contentReference[oaicite:0]{index=0}
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -85,7 +90,6 @@ export default function Register() {
           justify-content: center;
           align-items: center;
           background: linear-gradient(135deg, #0f172a, #1e293b);
-          overflow: hidden;
         }
 
         .glow1, .glow2 {
@@ -98,48 +102,16 @@ export default function Register() {
           animation: float 8s ease-in-out infinite;
         }
 
-        .glow1 {
-          background: #6366f1;
-          top: -100px;
-          left: -100px;
-        }
-
-        .glow2 {
-          background: #ec4899;
-          bottom: -100px;
-          right: -100px;
-        }
-
-        @keyframes float {
-          0%,100% { transform: translateY(0); }
-          50% { transform: translateY(-50px); }
-        }
+        .glow1 { background: #6366f1; top: -100px; left: -100px; }
+        .glow2 { background: #ec4899; bottom: -100px; right: -100px; }
 
         .card {
-          position: relative;
           width: 400px;
           padding: 40px;
           border-radius: 20px;
           background: rgba(255,255,255,0.08);
           backdrop-filter: blur(20px);
           box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-          animation: fadeIn 0.8s ease;
-        }
-
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(40px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        h2 {
-          text-align: center;
-          color: white;
-        }
-
-        .sub {
-          text-align: center;
-          color: #cbd5f5;
-          margin-bottom: 20px;
         }
 
         .input-group {
@@ -147,17 +119,16 @@ export default function Register() {
           margin-bottom: 20px;
         }
 
-        .input-group input {
+        input {
           width: 100%;
           padding: 14px;
           border-radius: 10px;
           border: none;
-          outline: none;
           background: rgba(255,255,255,0.1);
           color: white;
         }
 
-        .input-group label {
+        label {
           position: absolute;
           left: 14px;
           top: 14px;
@@ -165,83 +136,36 @@ export default function Register() {
           transition: 0.3s;
         }
 
-        .input-group input:focus + label,
-        .input-group input:not(:placeholder-shown) + label {
+        input:focus + label,
+        input:not(:placeholder-shown) + label {
           top: -8px;
           font-size: 12px;
           color: #818cf8;
         }
 
-        .toggle {
-          position: absolute;
-          right: 12px;
-          top: 12px;
-          cursor: pointer;
-        }
-
-        .strength-bar {
-          height: 6px;
-          border-radius: 5px;
-          margin-top: 5px;
-          background: ${
-            strength === "Weak"
-              ? "#ef4444"
-              : strength === "Medium"
-              ? "#facc15"
-              : "#22c55e"
-          };
-          width: ${
-            strength === "Weak"
-              ? "30%"
-              : strength === "Medium"
-              ? "60%"
-              : "100%"
-          };
-          transition: 0.3s;
-        }
-
         .btn {
           width: 100%;
           padding: 14px;
-          border: none;
           border-radius: 12px;
+          border: none;
           background: linear-gradient(135deg, #6366f1, #ec4899);
           color: white;
           font-weight: bold;
-          cursor: pointer;
-          transition: 0.3s;
         }
 
-        .btn:hover {
-          transform: translateY(-2px) scale(1.03);
-          box-shadow: 0 10px 25px rgba(236,72,153,0.5);
-        }
-
-        .error {
-          color: #f87171;
+        .admin-link {
+          margin-top: 12px;
           text-align: center;
-          margin-bottom: 10px;
+          color: #94a3b8;
         }
 
-        .success {
-          color: #22c55e;
-          text-align: center;
-          margin-bottom: 10px;
-        }
-
-        .bottom {
-          margin-top: 20px;
-          text-align: center;
-          color: #cbd5f5;
-        }
-
-        .bottom span {
-          color: #818cf8;
+        .admin-link span {
+          color: #a5b4fc;
           cursor: pointer;
           font-weight: 600;
         }
 
-        .bottom span:hover {
+        .admin-link span:hover {
           text-decoration: underline;
         }
       `}</style>
@@ -252,7 +176,6 @@ export default function Register() {
 
         <div className="card">
           <h2>Join Tech Academy 🚀</h2>
-          <p className="sub">Start your learning journey today</p>
 
           {error && <div className="error">{error}</div>}
           {success && <div className="success">{success}</div>}
@@ -265,7 +188,7 @@ export default function Register() {
 
             <div className="input-group">
               <input type="email" name="email" placeholder=" " required onChange={handleChange}/>
-              <label>Email Address</label>
+              <label>Email</label>
             </div>
 
             <div className="input-group">
@@ -292,6 +215,11 @@ export default function Register() {
               {loading ? "Creating..." : "Create Account"}
             </button>
           </form>
+
+          {/* 🔥 NEW ADMIN ACCESS */}
+          <p className="admin-link">
+            Admin? <span onClick={() => navigate("/admin/login")}>Login here</span>
+          </p>
 
           <p className="bottom">
             Already have an account?{" "}
