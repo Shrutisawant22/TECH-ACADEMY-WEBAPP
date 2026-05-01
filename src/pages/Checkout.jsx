@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { getCourses, enrollCourse } from "../api";
 
 export default function Checkout() {
   const { courseId } = useParams();
@@ -12,7 +13,7 @@ export default function Checkout() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
 
-  const [method, setMethod] = useState("card"); // card | upi
+  const [method, setMethod] = useState("card");
 
   const [card, setCard] = useState({
     number: "",
@@ -27,12 +28,7 @@ export default function Checkout() {
   useEffect(() => {
     const fetchCourse = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/courses", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`
-          }
-        });
-        const data = await res.json();
+        const data = await getCourses();
         setCourse(data.data.find((c) => c._id === courseId));
       } catch {
         setError("Failed to load course");
@@ -77,17 +73,10 @@ export default function Checkout() {
     try {
       await new Promise((r) => setTimeout(r, 1500));
 
-      await fetch("http://localhost:5000/api/enrollments", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`
-        },
-        body: JSON.stringify({ courseId })
-      });
+      // ✅ FIXED: Use API instead of localhost fetch
+      await enrollCourse(courseId);
 
       setSuccess(true);
-
       setTimeout(() => navigate("/my-courses"), 2000);
     } catch {
       setError("Payment failed");
@@ -101,7 +90,6 @@ export default function Checkout() {
   return (
     <div className="page">
 
-      {/* LEFT */}
       <div className="left">
         <img src={course.thumbnail} className="img" alt="" />
         <h2>{course.title}</h2>
@@ -112,7 +100,6 @@ export default function Checkout() {
         </div>
       </div>
 
-      {/* RIGHT */}
       <div className="right">
 
         {success ? (
@@ -127,7 +114,6 @@ export default function Checkout() {
           <>
             <h3>Secure Checkout 🔒</h3>
 
-            {/* PAYMENT METHOD */}
             <div className="tabs">
               <button
                 className={method === "card" ? "active" : ""}
@@ -144,7 +130,6 @@ export default function Checkout() {
               </button>
             </div>
 
-            {/* CARD */}
             {method === "card" && (
               <>
                 <div className="card-preview">
@@ -200,7 +185,6 @@ export default function Checkout() {
               </>
             )}
 
-            {/* UPI */}
             {method === "upi" && (
               <div className="upi-box">
                 <p>Scan QR or enter UPI ID</p>
