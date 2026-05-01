@@ -59,7 +59,7 @@ export const getCourses = () =>
   request("/courses");
 
 export const getMyCourses = () =>
-  request("/users/my-courses");
+  request("/enrollments/my-courses");
 
 export const enrollCourse = (courseId) =>
   request(`/users/enroll/${courseId}`, {
