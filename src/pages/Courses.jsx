@@ -4,7 +4,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-
+import { getCourses } from "../api";
 export default function Courses() {
   const [courses, setCourses] = useState([]);
   const [filtered, setFiltered] = useState([]);
@@ -22,38 +22,18 @@ export default function Courses() {
   // ==========================
   useEffect(() => {
     const fetchCourses = async () => {
-      try {
-        const token = localStorage.getItem("token");
+  try {
+    const data = await getCourses();
 
-        const res = await fetch("http://localhost:5000/api/courses", {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: token ? `Bearer ${token}` : ""
-          }
-        });
+    setCourses(data.data || []);
+    setFiltered(data.data || []);
 
-        // 🔥 HANDLE TOKEN EXPIRED / INVALID
-        if (res.status === 401) {
-          localStorage.removeItem("token");
-          navigate("/");
-          return;
-        }
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          throw new Error(data.message || "Failed to fetch courses");
-        }
-
-        setCourses(data.data || []);
-        setFiltered(data.data || []);
-
-      } catch (err) {
-        console.error("Courses Error:", err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+  } catch (err) {
+    console.error("Courses Error:", err.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
     fetchCourses();
   }, [navigate]);
