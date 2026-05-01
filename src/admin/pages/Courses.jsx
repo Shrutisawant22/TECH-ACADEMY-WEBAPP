@@ -1,5 +1,5 @@
 // ==========================
-// 📁 UPDATED Courses.jsx (FIX PRICE DISPLAY PROPERLY)
+// 📁 src/admin/pages/Courses.jsx (UPDATED)
 // ==========================
 import React, { useEffect, useState } from "react";
 import DataTable from "../components/DataTable";
@@ -14,13 +14,15 @@ export default function Courses() {
 
   const token = localStorage.getItem("adminToken");
 
+  const BASE_URL = "https://tech-academy-api-7ayl.onrender.com/api";
+
   // ==========================
   // 📡 FETCH COURSES
   // ==========================
   const fetchCourses = async () => {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/courses?page=${page}`,
+        `${BASE_URL}/courses?page=${page}`,
         {
           headers: {
             Authorization: `Bearer ${token}`
@@ -50,7 +52,7 @@ export default function Courses() {
     if (!window.confirm("Delete this course?")) return;
 
     try {
-      await fetch(`http://localhost:5000/api/admin/courses/${id}`, {
+      await fetch(`${BASE_URL}/admin/courses/${id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`
@@ -88,7 +90,6 @@ export default function Courses() {
       key: "price",
       label: "Price",
       render: (val, row) => {
-        // 🔥 FIX: handle 0, string, undefined
         const price =
           row.price !== undefined && row.price !== null
             ? row.price
