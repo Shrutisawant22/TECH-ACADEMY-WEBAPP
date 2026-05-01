@@ -5,7 +5,7 @@
 
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { registerUser } from "../api";
 export default function Register() {
   const [form, setForm] = useState({
     name: "",
@@ -37,45 +37,33 @@ export default function Register() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
+  e.preventDefault();
+  setError("");
+  setSuccess("");
 
-    if (form.password !== form.confirm) {
-      setError("Passwords do not match ❌");
-      return;
-    }
+  if (form.password !== form.confirm) {
+    setError("Passwords do not match ❌");
+    return;
+  }
 
-    setLoading(true);
+  setLoading(true);
 
-    try {
-      const res = await fetch("http://localhost:5000/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          name: form.name,
-          email: form.email,
-          password: form.password
-        })
-      });
+  try {
+    await registerUser({
+      name: form.name,
+      email: form.email,
+      password: form.password
+    });
 
-      const data = await res.json();
+    setSuccess("Account created 🎉 Redirecting...");
+    setTimeout(() => navigate("/"), 1500);
 
-      if (!res.ok) {
-        setError(data.message || "Registration failed");
-      } else {
-        setSuccess("Account created 🎉 Redirecting...");
-        setTimeout(() => navigate("/"), 1500);
-      }
-    } catch {
-      setError("Server error. Try again.");
-    }
+  } catch (err) {
+    setError(err.message || "Registration failed");
+  }
 
-    setLoading(false);
-  };
-
+  setLoading(false);
+};
   return (
     <>
       <style>{`
