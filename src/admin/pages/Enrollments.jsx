@@ -1,5 +1,5 @@
 // ==========================
-// 📁 UPDATED Enrollments.jsx (FIX PRICE DISPLAY)
+// 📁 src/admin/pages/Enrollments.jsx (UPDATED)
 // ==========================
 import React, { useEffect, useState } from "react";
 import DataTable from "../components/DataTable";
@@ -14,13 +14,15 @@ export default function Enrollments() {
 
   const token = localStorage.getItem("adminToken");
 
+  const BASE_URL = "https://tech-academy-api-7ayl.onrender.com/api/admin";
+
   // ==========================
   // 📡 FETCH ENROLLMENTS
   // ==========================
   const fetchEnrollments = async () => {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/admin/enrollments?page=${page}`,
+        `${BASE_URL}/enrollments?page=${page}`,
         {
           headers: {
             Authorization: `Bearer ${token}`
