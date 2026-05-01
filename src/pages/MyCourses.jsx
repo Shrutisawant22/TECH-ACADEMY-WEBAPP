@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-
+import { getMyCourses } from "../api";
 export default function MyCourses() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -9,33 +9,23 @@ export default function MyCourses() {
   // FETCH COURSES
   // ==========================
   useEffect(() => {
-    const fetchMyCourses = async () => {
-      try {
-        const res = await fetch(
-          "http://localhost:5000/api/enrollments/my-courses",
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`
-            }
-          }
-        );
+   const fetchMyCourses = async () => {
+  try {
+    const data = await getMyCourses();
 
-        const data = await res.json();
+    const enriched = (data.data || []).map((item) => ({
+      ...item.course,
+      enrollmentId: item._id,
+      progress: item.progress || 0
+    }));
 
-        const enriched = (data.data || []).map((item) => ({
-          ...item.course,
-          enrollmentId: item._id,
-          progress: item.progress || 0
-        }));
-
-        setCourses(enriched);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
+    setCourses(enriched);
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setLoading(false);
+  }
+};
     fetchMyCourses();
   }, []);
 
