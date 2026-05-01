@@ -2,7 +2,7 @@
 // 📁 src/admin/services/adminApi.js (ADVANCED)
 // ==========================
 
-const BASE_URL = "http://localhost:5000/api/admin";
+const BASE_URL = "https://tech-academy-api-7ayl.onrender.com/api/admin";
 
 // ==========================
 // 🔐 GET TOKEN
