@@ -1,5 +1,5 @@
 // ==========================
-// 📁 src/admin/hooks/useAdminAuth.js (ADVANCED)
+// 📁 src/admin/hooks/useAdminAuth.js (UPDATED)
 // ==========================
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -9,6 +9,8 @@ export default function useAdminAuth() {
 
   const [admin, setAdmin] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const BASE_URL = "https://tech-academy-api-7ayl.onrender.com/api/admin";
 
   // ==========================
   // 🔍 VERIFY ADMIN TOKEN
@@ -22,7 +24,7 @@ export default function useAdminAuth() {
     }
 
     try {
-      const res = await fetch("http://localhost:5000/api/admin/dashboard", {
+      const res = await fetch(`${BASE_URL}/dashboard`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -51,7 +53,7 @@ export default function useAdminAuth() {
   // ==========================
   const loginAdmin = async (email, password) => {
     try {
-      const res = await fetch("http://localhost:5000/api/admin/login", {
+      const res = await fetch(`${BASE_URL}/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
