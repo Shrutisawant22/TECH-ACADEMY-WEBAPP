@@ -1,5 +1,5 @@
 // ==========================
-// 📁 src/admin/pages/Dashboard.jsx (PREMIUM UI / PRODUCTION LEVEL)
+// 📁 src/admin/pages/Dashboard.jsx (UPDATED)
 // ==========================
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -11,12 +11,14 @@ export default function Dashboard() {
 
   const token = localStorage.getItem("adminToken");
 
+  const BASE_URL = "https://tech-academy-api-7ayl.onrender.com/api/admin";
+
   // ==========================
   // 📡 FETCH DATA
   // ==========================
   const fetchStats = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/admin/dashboard", {
+      const res = await fetch(`${BASE_URL}/dashboard`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -42,7 +44,6 @@ export default function Dashboard() {
   return (
     <div className="dashboard">
 
-      {/* HEADER */}
       <motion.div
         className="header"
         initial={{ opacity: 0, y: -20 }}
@@ -52,7 +53,6 @@ export default function Dashboard() {
         <p>Track performance, growth & revenue in real-time</p>
       </motion.div>
 
-      {/* STATS */}
       <div className="stats-grid">
         <StatCard title="Users" value={stats?.totalUsers || 0} icon="👤" color="indigo" loading={loading} />
         <StatCard title="Courses" value={stats?.totalCourses || 0} icon="📚" color="blue" loading={loading} />
@@ -60,10 +60,8 @@ export default function Dashboard() {
         <StatCard title="Revenue" value={`₹${stats?.totalRevenue || 0}`} icon="💰" color="purple" loading={loading} />
       </div>
 
-      {/* GRID */}
       <div className="grid">
 
-        {/* COMPLETION CARD */}
         <motion.div
           className="card glass"
           initial={{ opacity: 0, y: 20 }}
@@ -86,7 +84,6 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
-        {/* ACTIVITY */}
         <motion.div
           className="card glass"
           initial={{ opacity: 0, y: 20 }}
@@ -102,7 +99,6 @@ export default function Dashboard() {
           </ul>
         </motion.div>
 
-        {/* PERFORMANCE */}
         <motion.div
           className="card gradient"
           initial={{ opacity: 0, y: 20 }}
@@ -115,7 +111,6 @@ export default function Dashboard() {
 
       </div>
 
-      {/* STYLES */}
       <style>{`
         .dashboard {
           padding: 20px;
