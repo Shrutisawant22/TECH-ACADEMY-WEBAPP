@@ -1,5 +1,5 @@
 // ==========================
-// 📁 src/admin/pages/Users.jsx (ULTRA ADVANCED)
+// 📁 src/admin/pages/Users.jsx (UPDATED)
 // ==========================
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -14,13 +14,15 @@ export default function Users() {
 
   const token = localStorage.getItem("adminToken");
 
+  const BASE_URL = "https://tech-academy-api-7ayl.onrender.com/api/admin";
+
   // ==========================
   // 📡 FETCH USERS
   // ==========================
   const fetchUsers = async () => {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/admin/users?page=${page}`,
+        `${BASE_URL}/users?page=${page}`,
         {
           headers: {
             Authorization: `Bearer ${token}`
@@ -50,7 +52,7 @@ export default function Users() {
     if (!window.confirm("Delete this user?")) return;
 
     try {
-      await fetch(`http://localhost:5000/api/admin/users/${id}`, {
+      await fetch(`${BASE_URL}/users/${id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`
@@ -137,7 +139,6 @@ export default function Users() {
         selectable
       />
 
-      {/* STYLES */}
       <style>{`
         .page {
           padding: 10px;
