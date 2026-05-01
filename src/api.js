@@ -2,7 +2,6 @@
 // 🌐 GLOBAL API CONFIG
 // ==========================
 
-// 👉 Your Render backend base URL
 const BASE_URL = "https://tech-academy-api-7ayl.onrender.com/api";
 
 // ==========================
@@ -61,9 +60,11 @@ export const getCourses = () =>
 export const getMyCourses = () =>
   request("/enrollments/my-courses");
 
+// ✅ FIXED HERE (IMPORTANT)
 export const enrollCourse = (courseId) =>
-  request(`/users/enroll/${courseId}`, {
-    method: "POST"
+  request("/enrollments", {
+    method: "POST",
+    body: JSON.stringify({ courseId })
   });
 
 export const checkoutCourse = (courseId) =>
